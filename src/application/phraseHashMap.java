@@ -7,7 +7,6 @@ public class phraseHashMap {
 	HashMap<Integer, String[]> phrases;
 	int mapLenght;
 	public phraseHashMap(){
-		
 		//Phrase Strings
 		String[] hello = new String[]{"HELLO","HEY","HI","HOWDY"};
 		String[] goodbye = new String[]{"BYE" ,"GOOD BYE" ,"LATER ALLIGATOR"};
@@ -16,14 +15,13 @@ public class phraseHashMap {
 		
 		// Create a HashMap
 	    phrases = new HashMap<Integer, String[]>();
-
 	    // Add keys and values
-	   phrases.put(0, hello);
-	   phrases.put(1, goodbye);
-	   phrases.put(2,howAreYou);
+	    phrases.put(0, hello);
+	    phrases.put(1, goodbye);
+	    phrases.put(2, howAreYou);
 	   
-	   mapLenght = phrases.size();
-	 
+	    mapLenght = phrases.size();
+	    
 	}
 
 	public int searchHashMap(String text){
@@ -38,6 +36,7 @@ public class phraseHashMap {
 				}
 			}
 		}
+		
 		return -1;
 	}
 	

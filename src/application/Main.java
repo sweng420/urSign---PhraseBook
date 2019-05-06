@@ -3,7 +3,10 @@ package application;
 import javafx.application.Application;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -12,6 +15,9 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+
+import java.util.Optional;
+
 import application.phraseHashMap;
 
 public class Main extends Application {
@@ -147,9 +153,52 @@ public class Main extends Application {
 	}
 	
 	public int evaluateString(String text){
-		int imageId = -1;
-		imageId = map.searchHashMap(text);
-		return imageId;
+		
+		CustomContainer indexAndSimilarity = map.searchHashMap(text);
+		int imageID = -1;
+		int similarity = indexAndSimilarity.getSimilarity();
+		int index = indexAndSimilarity.getIndex();
+		int position = indexAndSimilarity.getPosition();
+		
+		if (similarity == 100)
+		{
+			return index;
+		} else if (similarity > 80)
+		{
+			// Auto-complete
+			searchHistory.setValue(map.getMapString(index, position));
+			return index;
+			
+		} else if (similarity > 60)
+		{
+			// Display 'did you mean...?'
+			Alert alert = new Alert(AlertType.CONFIRMATION);
+			alert.setTitle("Confirmation Dialog");
+			alert.setHeaderText("Did you mean: " +map.getMapString(index, position)+"?");
+			//alert.setContentText("Are you ok with this?");
+
+			Optional<ButtonType> result = alert.showAndWait();
+			if (result.get() == ButtonType.OK){
+			    // ... user chose OK
+				searchHistory.setValue(map.getMapString(index, position));
+				return index;
+			} else {
+			    // ... user chose CANCEL or closed the dialog
+				return -1;
+			}
+		} else 
+		{
+			// Display error message
+			System.out.println("no phrase");
+			return -1;
+			
+		}
+		
+		//return 0;
+		
+//		int imageId = -1;
+//		imageId = map.searchHashMap(text);
+//		return imageId;
 	}
 	
 	public void loadImage(int index, int id ){
@@ -181,6 +230,10 @@ public class Main extends Application {
 		
 		searchHistory.getItems().add(0, text);
 		searchHistory.setValue(text);
+	}
+	
+	private void checkList(String text) {
+		
 	}
 
 }

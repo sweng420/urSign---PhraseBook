@@ -2,6 +2,9 @@ package application;
 
 import java.util.HashMap;
 
+import javafx.util.Pair;
+import me.xdrop.fuzzywuzzy.FuzzySearch;
+
 public class phraseHashMap {
 	
 	HashMap<Integer, String[]> phrases;
@@ -23,23 +26,38 @@ public class phraseHashMap {
 	    mapLenght = phrases.size();
 	    
 	}
+	
+	public String getMapString(int index, int position){
+		String phrase[] = phrases.get(index);
+		return phrase[position];
+	}
 
-	public int searchHashMap(String text){
+	public CustomContainer searchHashMap(String text){
 		String temp[];
+		CustomContainer indexAndSimilarity = new CustomContainer(-1, 0, 0);
 		
 		for (int i = 0; i < this.mapLenght; i++){
 			temp =  phrases.get(i);
 			for(int j = 0; j < temp.length ; j++ ){
-				if (temp[j].equals(text)){
-					System.out.println(i);
-					return i;
+				
+				int similarity = FuzzySearch.ratio(text, temp[j]);
+				
+				if (similarity > indexAndSimilarity.getSimilarity())
+				{
+					indexAndSimilarity.setSimilarity(similarity);
+					indexAndSimilarity.setIndex(i);
+					indexAndSimilarity.setPosition(j);
 				}
+				
+//				if (temp[j].equals(text)){
+//					System.out.println(i);
+//					return indexAndSimilarity;
+//				}
 			}
 		}
 		
-		return -1;
+		return indexAndSimilarity;
 	}
 	
 
-	
 }

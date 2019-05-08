@@ -9,13 +9,18 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Optional;
 
 import application.phraseHashMap;
@@ -26,10 +31,10 @@ public class Main extends Application {
 	ImageView iv;
 	Image image;
 	BorderPane root;
-	Boolean textDone = false;
+	
 	
 	Button submit;
-	TextField textField;
+	Label search;
 	phraseHashMap map = new phraseHashMap();
 	
 	ComboBox<String> searchHistory;
@@ -47,10 +52,6 @@ public class Main extends Application {
 			submit.setMinWidth(100);
 			submit.setStyle("-fx-font-size: 15; -fx-text-fill: Black;");
 			
-			textField = new TextField ("Enter phrase here...");
-			textField.prefWidthProperty().bind(hb.widthProperty());
-			textField.setStyle("-fx-font-size: 15; -fx-text-fill: Black;");
-			
 			Label history = new Label("Search history:");
 			history.setStyle("-fx-font-size: 15; -fx-text-fill: Black;");
 			
@@ -61,22 +62,27 @@ public class Main extends Application {
 			searchHistory.prefWidthProperty().bind(hb.widthProperty());
 			searchHistory.setStyle("-fx-font-size: 15; -fx-text-fill: Black;");
 			
+			search = new Label("Auto Corrected!");
+			search.setStyle("-fx-font-size: 15; -fx-text-fill: Black;");
+			search.setVisible(false);
 			
 			hb.getChildren().addAll(searchHistory, submit);
 			hb.setSpacing(10);
 			
-//			StackPane stack = new StackPane();
-//			stack.setAlignment(Pos.TOP_CENTER);
-//		    stack.getChildren().addAll(history);
+			VBox vb = new VBox();
+			vb.getChildren().addAll(hb, search);
 			
-			root.setTop(hb);
-			//root.setRight(sh);
-			
-			
+			root.setTop(vb);
+
 			scene = new Scene(root,800,600);
 			primaryStage.setScene(scene);
 			primaryStage.show();
-
+			
+			// TEST
+			
+			readPhraseBook();
+			
+			// /TEST
 			runProgram();
 			
 		} catch(Exception e) {
@@ -91,43 +97,34 @@ public class Main extends Application {
 	public void runProgram(){
 		
 		submit.setOnAction(e->{
-			//getPhraseID(textField.getText());
+			search.setVisible(false);
 			int check = getPhraseID(searchHistory.getValue().toString());
 			
 			if (check != -1){
-				//updateHistory(textField.getText());
 				updateHistory(searchHistory.getValue().toString());
 			}
 			else{
 				searchHistory.setValue("Phrase not available");
 			}
 			
-			textDone = true;
+			
 		});
 		
 		scene.setOnKeyPressed(e->{
 			if (e.getCode() == KeyCode.ENTER){
-				//getPhraseID(textField.getText());
+				search.setVisible(false);
 				int check = getPhraseID(searchHistory.getValue().toString());
 				
 				if (check != -1){
-					//updateHistory(textField.getText());
 					updateHistory(searchHistory.getValue().toString());
 				}
 				else{
 					searchHistory.setValue("Phrase not available");
 				}
-				
-				textDone = true;
+			
 			}
 		});
 		
-		textField.setOnMouseClicked(e->{
-			if (textDone == true){
-				textField.clear();
-				textDone =  false;
-			}
-		});
 		
 	}
 	
@@ -144,18 +141,16 @@ public class Main extends Application {
 		}
 		else{
 			imageId = evaluateString(text);
-			
 			index = 1;
 		}
 		loadImage(index, imageId);
-		
 		return imageId;
 	}
 	
 	public int evaluateString(String text){
 		
 		CustomContainer indexAndSimilarity = map.searchHashMap(text);
-		int imageID = -1;
+		//int imageID = -1;
 		int similarity = indexAndSimilarity.getSimilarity();
 		int index = indexAndSimilarity.getIndex();
 		int position = indexAndSimilarity.getPosition();
@@ -166,21 +161,27 @@ public class Main extends Application {
 		} else if (similarity > 80)
 		{
 			// Auto-complete
-			searchHistory.setValue(map.getMapString(index, position));
+			searchHistory.setValue(map.getMapString(index, position).toLowerCase());
+			search.setVisible(true);
 			return index;
 			
-		} else if (similarity > 60)
+		} else if (similarity > 70)
 		{
 			// Display 'did you mean...?'
 			Alert alert = new Alert(AlertType.CONFIRMATION);
-			alert.setTitle("Confirmation Dialog");
-			alert.setHeaderText("Did you mean: " +map.getMapString(index, position)+"?");
-			//alert.setContentText("Are you ok with this?");
-
+			alert.setTitle("Phrase Not Found!");
+			alert.setHeaderText("Did you mean: " +map.getMapString(index, position).toLowerCase()+"?");
+			
+			ButtonType yes = new ButtonType("Yes");
+			ButtonType no = new ButtonType("No");
+			
+			alert.getButtonTypes().clear();
+			alert.getButtonTypes().addAll(yes,no);
+			
 			Optional<ButtonType> result = alert.showAndWait();
-			if (result.get() == ButtonType.OK){
+			if (result.get() == yes){
 			    // ... user chose OK
-				searchHistory.setValue(map.getMapString(index, position));
+				searchHistory.setValue(map.getMapString(index, position).toLowerCase());
 				return index;
 			} else {
 			    // ... user chose CANCEL or closed the dialog
@@ -191,7 +192,6 @@ public class Main extends Application {
 			// Display error message
 			System.out.println("no phrase");
 			return -1;
-			
 		}
 		
 		//return 0;
@@ -209,7 +209,7 @@ public class Main extends Application {
 		}
 		//Phrases
 		else if (index == 1){
-			image = new Image("file:phrases/"+id+".jpg");
+			image = new Image("file:phrases/"+id+".gif");
 		}
 		
 		iv = new ImageView(image);
@@ -232,8 +232,62 @@ public class Main extends Application {
 		searchHistory.setValue(text);
 	}
 	
-	private void checkList(String text) {
+	public void readPhraseBook()
+	{
+		// Pass file as parameter and instantiate FileReader 
 		
+		FileReader reader = null;
+		try {
+			reader = new FileReader("Phrases.txt");
+		} catch (FileNotFoundException e) {
+			System.out.println("File does not exist in this location");
+			e.printStackTrace();
+		} 
+		  
+		int i; 
+		
+		String fullPhraseBook = "";
+		ArrayList<Character> charArrayList = new ArrayList<Character>();
+		
+		try {
+			i = reader.read();
+			
+			// As long as there is something to read...
+			
+			while (i != -1)
+			{
+				// ...Add character to an ArrayList 
+				
+				charArrayList.add((char)i);
+				
+				// Read next character of phrasebook
+				
+				i = reader.read();
+			}
+			
+			final Character[] charactersArray = 
+					charArrayList.toArray(new Character[charArrayList.size()]);
+			
+			for (Character c : charactersArray)
+			{
+				fullPhraseBook += c.toString();
+			}
+			
+			String[] delimitedPhraseSets = fullPhraseBook.split("-");
+			ArrayList<String> delimitedPhrases;
+			
+			for (int j = 0; j < delimitedPhraseSets.length; j++)
+			{
+				String[] tempPhrases = delimitedPhraseSets[j].split("_");
+				delimitedPhrases = new ArrayList<>(Arrays.asList(tempPhrases));
+			}
+			
+			
+			System.out.println(Arrays.toString(delimitedPhrases));
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+		} 
 	}
 
 }

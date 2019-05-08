@@ -2,19 +2,22 @@ package application;
 
 import java.util.HashMap;
 
-import javafx.util.Pair;
 import me.xdrop.fuzzywuzzy.FuzzySearch;
 
 public class phraseHashMap {
 	
 	HashMap<Integer, String[]> phrases;
-	int mapLenght;
+	int mapLength;
 	public phraseHashMap(){
 		//Phrase Strings
-		String[] hello = new String[]{"HELLO","HEY","HI","HOWDY"};
+		String[] hello = new String[]{"HELLO","HEY","HI ","HOWDY"};
 		String[] goodbye = new String[]{"BYE" ,"GOOD BYE" ,"LATER ALLIGATOR"};
-		String[] howAreYou = new String[]{"HOW ARE YOU", "HOW R U"};
-		
+		String[] howAreYou = new String[]{"HOW ARE YOU?","HOW ARE YOU", "HOW R U"};
+		String[] yes = new String[]{"YES","YEAH","YE"};
+		String[] no = new String[]{"NO","NAH","NOPE"};
+		String[] please = new String[]{"PLEASE","PLS"};
+		String[] thankYou = new String[]{"THANK YOU","THANKS","CHEERS","THX"};
+		String[] sorry = new String[]{"SORRY","MY BAD","SOZ"};
 		
 		// Create a HashMap
 	    phrases = new HashMap<Integer, String[]>();
@@ -22,9 +25,13 @@ public class phraseHashMap {
 	    phrases.put(0, hello);
 	    phrases.put(1, goodbye);
 	    phrases.put(2, howAreYou);
+	    phrases.put(3, yes);
+	    phrases.put(4, no);
+	    phrases.put(5, please);
+	    phrases.put(6, thankYou);
+	    phrases.put(7, sorry);
 	   
-	    mapLenght = phrases.size();
-	    
+	    mapLength = phrases.size();
 	}
 	
 	public String getMapString(int index, int position){
@@ -33,14 +40,14 @@ public class phraseHashMap {
 	}
 
 	public CustomContainer searchHashMap(String text){
-		String temp[];
+		String tempString[];
 		CustomContainer indexAndSimilarity = new CustomContainer(-1, 0, 0);
 		
-		for (int i = 0; i < this.mapLenght; i++){
-			temp =  phrases.get(i);
-			for(int j = 0; j < temp.length ; j++ ){
+		for (int i = 0; i < this.mapLength; i++){
+			tempString =  phrases.get(i);
+			for(int j = 0; j < tempString.length ; j++ ){
 				
-				int similarity = FuzzySearch.ratio(text, temp[j]);
+				int similarity = FuzzySearch.ratio(text, tempString[j]);
 				
 				if (similarity > indexAndSimilarity.getSimilarity())
 				{
@@ -48,16 +55,9 @@ public class phraseHashMap {
 					indexAndSimilarity.setIndex(i);
 					indexAndSimilarity.setPosition(j);
 				}
-				
-//				if (temp[j].equals(text)){
-//					System.out.println(i);
-//					return indexAndSimilarity;
-//				}
 			}
 		}
-		
 		return indexAndSimilarity;
+		
 	}
-	
-
 }

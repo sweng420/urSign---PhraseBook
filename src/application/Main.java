@@ -15,12 +15,6 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Optional;
 
 import application.phraseHashMap;
@@ -78,10 +72,6 @@ public class Main extends Application {
 			primaryStage.setScene(scene);
 			primaryStage.show();
 			
-			// TEST
-			
-			readPhraseBook();
-			
 			// /TEST
 			runProgram();
 			
@@ -129,15 +119,29 @@ public class Main extends Application {
 	}
 	
 	public int getPhraseID(String text){
+		
+		//Set defaults for error msg 
 		int imageId = -1;
 		int index = 0;
+		
+		//Convert entered string to all upper case for string comparisons 
 		text = text.toUpperCase();
-		//System.out.println(text.length());
+		
+		//If single character entered...
 		if (text.length() == 1){
 			char c = text.charAt(0);
-			//System.out.println(c);
-			imageId = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".indexOf(c);
-			index = 0;
+			if(Character.isLetter(c) == true){
+				//ImageId for alphabet character 0-25
+				imageId = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".indexOf(c);
+				index = 0;
+			}
+			else if(Character.isDigit(c) == true){
+				//ImageId for numbers from 26 onwards...
+				
+				imageId = Character.getNumericValue(c) + 26;
+				System.out.println(imageId);
+				index = 0;
+			}
 		}
 		else{
 			imageId = evaluateString(text);
@@ -149,25 +153,33 @@ public class Main extends Application {
 	
 	public int evaluateString(String text){
 		
+		//Store the hash map key value, similarity and position of string closest to user input string
 		CustomContainer indexAndSimilarity = map.searchHashMap(text);
 		//int imageID = -1;
 		int similarity = indexAndSimilarity.getSimilarity();
 		int index = indexAndSimilarity.getIndex();
 		int position = indexAndSimilarity.getPosition();
 		
+		//If there is a 100% match between user input and mapped string
 		if (similarity == 100)
 		{
+			//Returns the id for the image for corresponding string set
 			return index;
-		} else if (similarity > 80)
+		} 
+		//If there is an larger than 80% match between user input and mapped string
+		else if (similarity > 80)
 		{
-			// Auto-complete
+			// Auto-complete the users input value
 			searchHistory.setValue(map.getMapString(index, position).toLowerCase());
+			//Indicate that an auto-complete has occurred
 			search.setVisible(true);
 			return index;
 			
-		} else if (similarity > 70)
+		} 
+		//If there is an larger than  70% match between user input and mapped string
+		else if (similarity > 70)
 		{
-			// Display 'did you mean...?'
+			// Alert user to the string that is close to their input, and prompt and "Did you mean X " alert
 			Alert alert = new Alert(AlertType.CONFIRMATION);
 			alert.setTitle("Phrase Not Found!");
 			alert.setHeaderText("Did you mean: " +map.getMapString(index, position).toLowerCase()+"?");
@@ -189,16 +201,10 @@ public class Main extends Application {
 			}
 		} else 
 		{
-			// Display error message
+			// Display error message if there is no match
 			System.out.println("no phrase");
 			return -1;
 		}
-		
-		//return 0;
-		
-//		int imageId = -1;
-//		imageId = map.searchHashMap(text);
-//		return imageId;
 	}
 	
 	public void loadImage(int index, int id ){
@@ -232,62 +238,4 @@ public class Main extends Application {
 		searchHistory.setValue(text);
 	}
 	
-	public void readPhraseBook()
-	{
-		// Pass file as parameter and instantiate FileReader 
-		
-		FileReader reader = null;
-		try {
-			reader = new FileReader("Phrases.txt");
-		} catch (FileNotFoundException e) {
-			System.out.println("File does not exist in this location");
-			e.printStackTrace();
-		} 
-		  
-		int i; 
-		
-		String fullPhraseBook = "";
-		ArrayList<Character> charArrayList = new ArrayList<Character>();
-		
-		try {
-			i = reader.read();
-			
-			// As long as there is something to read...
-			
-			while (i != -1)
-			{
-				// ...Add character to an ArrayList 
-				
-				charArrayList.add((char)i);
-				
-				// Read next character of phrasebook
-				
-				i = reader.read();
-			}
-			
-			final Character[] charactersArray = 
-					charArrayList.toArray(new Character[charArrayList.size()]);
-			
-			for (Character c : charactersArray)
-			{
-				fullPhraseBook += c.toString();
-			}
-			
-			String[] delimitedPhraseSets = fullPhraseBook.split("-");
-			ArrayList<String> delimitedPhrases;
-			
-			for (int j = 0; j < delimitedPhraseSets.length; j++)
-			{
-				String[] tempPhrases = delimitedPhraseSets[j].split("_");
-				delimitedPhrases = new ArrayList<>(Arrays.asList(tempPhrases));
-			}
-			
-			
-			System.out.println(Arrays.toString(delimitedPhrases));
-			
-		} catch (IOException e) {
-			e.printStackTrace();
-		} 
-	}
-
 }

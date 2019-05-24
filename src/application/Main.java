@@ -37,42 +37,48 @@ public class Main extends Application {
 	public void start(Stage primaryStage) {
 		try {
 			
-			
+			//Root borderPane for all nodes
 			root = new BorderPane();
-			HBox hb = new HBox();
 			
+			//HBox for search controls  
+			HBox searchBar = new HBox();
+			
+			//Button for completing search actions 
 			submit = new Button();
 			submit.setText("Submit");
 			submit.setMinWidth(100);
 			submit.setStyle("-fx-font-size: 15; -fx-text-fill: Black;");
 			
-			Label history = new Label("Search history:");
-			history.setStyle("-fx-font-size: 15; -fx-text-fill: Black;");
-			
+			//Create editable ComboBox for queries and history 
 			searchHistory = new ComboBox<String>();
 			searchHistory.setPromptText("Search....");
 			searchHistory.setEditable(true);
 			searchHistory.setVisibleRowCount(4);
-			searchHistory.prefWidthProperty().bind(hb.widthProperty());
+			searchHistory.prefWidthProperty().bind(searchBar.widthProperty());
 			searchHistory.setStyle("-fx-font-size: 15; -fx-text-fill: Black;");
 			
-			search = new Label("Auto Corrected!");
+			//Label for informing user when a query has be auto corrected
+			search = new Label();
 			search.setStyle("-fx-font-size: 15; -fx-text-fill: Black;");
 			search.setVisible(false);
 			
-			hb.getChildren().addAll(searchHistory, submit);
-			hb.setSpacing(10);
+			//Add nodes to HBox
+			searchBar.getChildren().addAll(searchHistory, submit);
+			searchBar.setSpacing(10);
 			
+			//VBox for search controls and user info label
 			VBox vb = new VBox();
-			vb.getChildren().addAll(hb, search);
+			vb.getChildren().addAll(searchBar, search);
 			
+			//Add VBox to top of root borderPane
 			root.setTop(vb);
 
+			//Add root pane to scene, and show stage
 			scene = new Scene(root,800,600);
 			primaryStage.setScene(scene);
 			primaryStage.show();
 			
-			// /TEST
+			//Launch main program
 			runProgram();
 			
 		} catch(Exception e) {
@@ -86,13 +92,19 @@ public class Main extends Application {
 
 	public void runProgram(){
 		
+		//When the submit button is clicked
 		submit.setOnAction(e->{
+			//Set information label to invisible 
 			search.setVisible(false);
+			//Get the ID of the user entered phrase
 			int check = getPhraseID(searchHistory.getValue().toString());
 			
+			//Phrase ID -1 when phrase not recognised
+			//When phrase is recognised update the search history
 			if (check != -1){
 				updateHistory(searchHistory.getValue().toString());
 			}
+			//Otherwise inform user that the entered phrase is not recognised
 			else{
 				searchHistory.setValue("Phrase not available");
 			}
@@ -100,6 +112,7 @@ public class Main extends Application {
 			
 		});
 		
+		//Set same functionality for pressing the ENTER key as the submit button
 		scene.setOnKeyPressed(e->{
 			if (e.getCode() == KeyCode.ENTER){
 				search.setVisible(false);
@@ -120,34 +133,44 @@ public class Main extends Application {
 	
 	public int getPhraseID(String text){
 		
-		//Set defaults for error msg 
+		//Set defaults for error message 
 		int imageId = -1;
 		int index = 0;
 		
+		//Trim leading and trailing whitespace from enter string
+		text = text.trim();
 		//Convert entered string to all upper case for string comparisons 
 		text = text.toUpperCase();
+		
+		
 		
 		//If single character entered...
 		if (text.length() == 1){
 			char c = text.charAt(0);
+			
+			//Check if entered character is a letter...
 			if(Character.isLetter(c) == true){
 				//ImageId for alphabet character 0-25
 				imageId = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".indexOf(c);
 				index = 0;
 			}
+			//Check if entered character is a number
 			else if(Character.isDigit(c) == true){
 				//ImageId for numbers from 26 onwards...
-				
 				imageId = Character.getNumericValue(c) + 26;
-				System.out.println(imageId);
 				index = 0;
 			}
 		}
+		//If entered string is longer then a single character, search HashMap of known phrases
 		else{
 			imageId = evaluateString(text);
 			index = 1;
 		}
+		
+		//Load the image corrospondiong to the enter string
 		loadImage(index, imageId);
+		
+		//Return image ID value
 		return imageId;
 	}
 	
@@ -172,6 +195,7 @@ public class Main extends Application {
 			// Auto-complete the users input value
 			searchHistory.setValue(map.getMapString(index, position).toLowerCase());
 			//Indicate that an auto-complete has occurred
+			search.setText("Auto corrected '" + text.toLowerCase() + "' to " + map.getMapString(index, position).toLowerCase());
 			search.setVisible(true);
 			return index;
 			
@@ -191,6 +215,7 @@ public class Main extends Application {
 			alert.getButtonTypes().addAll(yes,no);
 			
 			Optional<ButtonType> result = alert.showAndWait();
+			//Set actions for each button type
 			if (result.get() == yes){
 			    // ... user chose OK
 				searchHistory.setValue(map.getMapString(index, position).toLowerCase());
@@ -209,24 +234,27 @@ public class Main extends Application {
 	
 	public void loadImage(int index, int id ){
 		
-		//Alphabet
+		//Load image from alphabet and number folder
 		if(index == 0){
 			image = new Image("file:images/"+id+".jpg");
 		}
-		//Phrases
+		//Load image from phrases folder
 		else if (index == 1){
 			image = new Image("file:phrases/"+id+".gif");
 		}
 		
+		//Create and add ImageView for selected image
 		iv = new ImageView(image);
 		iv.setPreserveRatio(true);
 		iv.setFitWidth(300);
 		root.setCenter(iv);
-		System.out.println("loaded image");
 	}
 
+	//Update the users search history
 	public void updateHistory(String text){
 		
+		//Loop through current history and remove any duplicates from the history before adding entered
+		//  value to the top of the history
 		for (int i = 0; i < searchHistory.getItems().size() ; i++){
 			if (text == searchHistory.getItems().get(i)){
 				searchHistory.getItems().remove(i);
@@ -234,6 +262,7 @@ public class Main extends Application {
 			}
 		}
 		
+		//Add entered string to top of hsitory
 		searchHistory.getItems().add(0, text);
 		searchHistory.setValue(text);
 	}

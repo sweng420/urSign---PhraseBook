@@ -25,26 +25,6 @@ public class phraseHashMap {
 			phrases.put(i, temp);
 		}
 		
-//		//Phrase Strings
-//		String[] hello = new String[]{"HELLO","HEY","HI ","HOWDY"};
-//		String[] goodbye = new String[]{"BYE" ,"GOOD BYE" ,"LATER ALLIGATOR"};
-//		String[] howAreYou = new String[]{"HOW ARE YOU?","HOW ARE YOU", "HOW R U"};
-//		String[] yes = new String[]{"YES","YEAH","YE"};
-//		String[] no = new String[]{"NO","NAH","NOPE"};
-//		String[] please = new String[]{"PLEASE","PLS"};
-//		String[] thankYou = new String[]{"THANK YOU","THANKS","CHEERS","THX"};
-//		String[] sorry = new String[]{"SORRY","MY BAD","SOZ"};
-
-//	    // Add keys and values
-//	    phrases.put(0, hello);
-//	    phrases.put(1, goodbye);
-//	    phrases.put(2, howAreYou);
-//	    phrases.put(3, yes);
-//	    phrases.put(4, no);
-//	    phrases.put(5, please);
-//	    phrases.put(6, thankYou);
-//	    phrases.put(7, sorry);
-	   
 	    mapLength = phrases.size();
 	}
 	
